@@ -66,6 +66,8 @@
   .dayclear.show{display:inline-block}
   .dayclear:hover{border-color:#bcd0cb;color:var(--ink)}
   .sel{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-size:14px;font-family:inherit;color:var(--ink)}
+  .chk{display:flex;align-items:center;gap:8px;height:40px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
+  .chk input{width:17px;height:17px;accent-color:var(--teal);cursor:pointer;margin:0}
   .sel.month{min-width:140px}
   .arrow{color:var(--muted-2)}
   .results{display:grid;grid-template-columns:232px 1fr;gap:20px;align-items:start}
@@ -119,12 +121,15 @@
   .day{width:38px;height:46px;border-radius:8px;border:1px solid var(--line);background:#FAFBFB;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .day .dn{font-family:"IBM Plex Mono";font-size:12px;color:var(--muted-2);font-weight:600}
   .day .pips{display:flex;gap:2px;margin-top:4px;height:6px}.day .pips i{width:5px;height:5px;border-radius:50%}
-  .day.none{opacity:.4}.day.hit{background:#fff;border-color:#cfe2dd}
+  .day.none{opacity:.4}.day.hit{background:#fff;border-color:#cfe2dd;cursor:pointer;transition:.14s}
+  .day.hit:hover{border-color:var(--teal);transform:translateY(-1px)}
   .table{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
   .thead,.trow{display:grid;grid-template-columns:120px 1fr 92px 74px 70px 30px;gap:8px;align-items:center}
   .thead{padding:12px 16px;background:#F4F7F6;font-size:11.5px;color:var(--muted);font-weight:700}
   .trow{padding:13px 16px;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer}
   .trow:hover{background:#F8FAF9}
+  .trow.flash{animation:rowflash 1.3s ease}
+  @keyframes rowflash{0%,12%{background:#FBF1D6}100%{background:transparent}}
   .trow .t-date{font-family:"IBM Plex Mono";font-weight:600}
   .trow .t-date small{display:block;color:var(--muted-2);font-weight:500;font-size:11px;font-family:inherit}
   .pill{display:inline-flex;align-items:center;gap:6px;border-radius:7px;padding:3px 9px;font-size:11.5px;font-weight:700;color:#fff}
@@ -181,6 +186,7 @@
     .panel{padding:14px;border-radius:14px;margin-bottom:16px}
     .controls{gap:14px}
     .ctrl{flex:1 1 100%}
+    #originSelect,#cabinSelect{width:100%}
     .seg{width:100%;flex-wrap:wrap}
     .seg button{flex:1 1 40%;justify-content:center;padding:9px 4px;font-size:12px;line-height:1.15;text-align:center}
     .daterow{width:100%}
@@ -223,17 +229,21 @@
   <div class="panel">
     <div>
       <div class="flabel" data-i18n="from">Departure city</div>
-      <div class="chips" id="origins"></div>
+      <select class="sel" id="originSelect"></select>
     </div>
     <div class="controls">
       <div class="ctrl">
         <div class="flabel" data-i18n="cabin">Cabin</div>
-        <div class="seg" id="cabins">
-          <button data-c="ALL" class="on"><span class="swatch sw-all"></span><span data-i18n="allCab">All</span></button>
-          <button data-c="Y"><span class="swatch sw-y"></span><span data-i18n="eco">Economy</span></button>
-          <button data-c="J"><span class="swatch sw-j"></span><span data-i18n="biz">Business</span></button>
-          <button data-c="F"><span class="swatch sw-f"></span><span data-i18n="first">First</span></button>
-        </div>
+        <select class="sel" id="cabinSelect">
+          <option value="ALL" data-i18n="allCab">All</option>
+          <option value="Y" data-i18n="eco">Economy</option>
+          <option value="J" data-i18n="biz">Business</option>
+          <option value="F" data-i18n="first">First</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <div class="flabel" data-i18n="directLabel">Flight type</div>
+        <label class="chk"><input type="checkbox" id="directOnly"><span data-i18n="directOnly">Direct only</span></label>
       </div>
       <div class="ctrl">
         <div class="flabel" data-i18n="range">Date range</div>
@@ -281,7 +291,7 @@
 const I18N={
   ar:{title:"Alfursan seats finder",subtitle:"المقاعد المتاحة بالأميال — الخطوط السعودية وشركاء سكاي تيم",
       from:"مدينة المغادرة",cabin:"درجة السفر",range:"نطاق التاريخ",rangeArrow:"←",country:"الدولة",all:"كل الدول",
-      allCab:"الكل",eco:"اقتصادي",biz:"رجال أعمال",first:"أولى",loading:"…جارٍ تحميل البيانات",
+      allCab:"الكل",eco:"اقتصادي",biz:"رجال أعمال",first:"أولى",directLabel:"نوع الرحلة",directOnly:"المباشر فقط",loading:"…جارٍ تحميل البيانات",
       seatsLabel:"عدد المقاعد معًا",seatsHint:"الأدنى المطلوب على نفس الرحلة",specificDay:"يوم محدّد",clearDay:"مسح اليوم",
       foot:"بيانات مخزّنة ومحدّثة دوريًا · أكّد دائمًا على موقع السعودية قبل الحجز",
       backTo:"رجوع للوجهات",daysAvail:"يوم متاح",from2:"ابتداءً من",miles:"ميل",cheapest:"أرخص سعر",
@@ -294,7 +304,7 @@ const I18N={
       loadingFlights:"…جارٍ جلب الرحلات",flightsErr:"تعذّر جلب تفاصيل الرحلة",book:"احجز",flights:"الرحلات",refreshPrompt:"اكتب كلمة مرور التحديث",refreshWrong:"كلمة المرور غير صحيحة"},
   en:{title:"Alfursan seats finder",subtitle:"Seats bookable with miles — Saudia & SkyTeam partners",
       from:"Departure city",cabin:"Cabin",range:"Date range",rangeArrow:"→",country:"Country",all:"All countries",
-      allCab:"All",eco:"Economy",biz:"Business",first:"First",loading:"Loading data…",
+      allCab:"All",eco:"Economy",biz:"Business",first:"First",directLabel:"Flight type",directOnly:"Direct only",loading:"Loading data…",
       seatsLabel:"Seats together",seatsHint:"Minimum on the same flight",specificDay:"Specific day",clearDay:"Clear day",
       foot:"Cached data, refreshed periodically · always confirm on Saudia before booking",
       backTo:"Back to destinations",daysAvail:"days available",from2:"from",miles:"miles",cheapest:"cheapest",
@@ -330,7 +340,7 @@ const DOW_AR=["أحد","إثنين","ثلاثاء","أربعاء","خميس","ج
 const DOW_EN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const CABMAP={Y:"economy",J:"business",F:"first"};
 
-let lang="en", RECORDS=[], META={}, MONTHS=[], origin=null, cabin="ALL", country="ALL", m1=0, m2=0, seats=1, day=null;
+let lang="en", RECORDS=[], META={}, MONTHS=[], origin=null, cabin="ALL", country="ALL", m1=0, m2=0, seats=1, day=null, directOnly=false;
 const TRIP_CACHE={};
 let currentDest=null;
 const $=s=>document.querySelector(s);
@@ -344,7 +354,8 @@ const ymOf=d=>d.slice(0,7);
 const kk=v=>{const n=v/1000; return (v%1000===0?n:n.toFixed(1).replace(/\.0$/,''))+"k";};
 const CABS=()=>cabin==='ALL'?['Y','J','F']:[cabin];
 const passSeat=c=>c&&(seats<=1||(c.seats||0)>=seats);
-const qualifies=x=>CABS().some(c=>passSeat(x[c]));
+const passCab=c=>passSeat(c)&&(!directOnly||c.direct);
+const qualifies=x=>CABS().some(c=>passCab(x[c]));
 
 async function load(){
   try{
@@ -436,9 +447,9 @@ function destAgg(){
   const map={};
   rows.forEach(x=>{
     const m=map[x.d]||(map[x.d]={d:x.d,dcity:x.dcity,dcountry:x.dcountry,days:0,cheapest:Infinity,best:{Y:Infinity,J:Infinity,F:Infinity}});
-    m.days++; CABS().forEach(c=>{if(passSeat(x[c])&&x[c].miles<m.cheapest)m.cheapest=x[c].miles;});
+    m.days++; CABS().forEach(c=>{if(passCab(x[c])&&x[c].miles<m.cheapest)m.cheapest=x[c].miles;});
   });
-  rowsForOrigin().forEach(x=>{if(map[x.d])['Y','J','F'].forEach(c=>{if(passSeat(x[c])&&x[c].miles<map[x.d].best[c])map[x.d].best[c]=x[c].miles;});});
+  rowsForOrigin().forEach(x=>{if(map[x.d])['Y','J','F'].forEach(c=>{if(passCab(x[c])&&x[c].miles<map[x.d].best[c])map[x.d].best[c]=x[c].miles;});});
   let list=Object.values(map);
   if(country!=="ALL")list=list.filter(m=>m.dcountry===country);
   return list.sort((a,b)=>a.cheapest-b.cheapest);
@@ -450,7 +461,7 @@ function countryCounts(){
 }
 function renderOrigins(){
   const list=(META.origins&&META.origins.length)?META.origins:[{iata:origin||"—",city:""}];
-  $("#origins").innerHTML=list.map(o=>`<div class="chip ${o.iata===origin?'on':''}" data-o="${o.iata}"><span>${origName(o.iata,o.city)}</span><span class="code">${o.iata}</span></div>`).join("");
+  $("#originSelect").innerHTML=list.map(o=>`<option value="${o.iata}" ${o.iata===origin?'selected':''}>${origName(o.iata,o.city)} (${o.iata})</option>`).join("");
 }
 function renderMonths(){
   const opt=sel=>MONTHS.map((ym,i)=>{const[y,mm]=ym.split('-');return `<option value="${i}" ${i===sel?'selected':''}>${(lang==='ar'?MONTHS_AR:MONTHS_EN)[+mm-1]} ${y}</option>`;}).join("");
@@ -496,6 +507,7 @@ async function loadTrips(id,cab,exp,countEl){
     const want=CABMAP[cab];
     let trips=data.trips.filter(t=>(t.cabin||'').toLowerCase()===want);
     if(!trips.length)trips=data.trips;
+    if(directOnly)trips=trips.filter(t=>!t.stops);
     if(seats>1)trips=trips.filter(t=>(t.seats||0)>=seats);
     if(countEl)countEl.textContent=`${trips.length} ${flightLabel(trips.length)}`;
     const body=trips.map(t=>{
@@ -512,7 +524,7 @@ async function loadTrips(id,cab,exp,countEl){
 function openDetail(dest,keepPos){
   currentDest=dest;
   const rows=RECORDS.filter(x=>x.o===origin&&x.d===dest&&inRange(x.date)&&qualifies(x)).sort((a,b)=>a.date<b.date?-1:1);
-  let cheapest=Infinity;rows.forEach(x=>CABS().forEach(c=>{if(passSeat(x[c])&&x[c].miles<cheapest)cheapest=x[c].miles;}));
+  let cheapest=Infinity;rows.forEach(x=>CABS().forEach(c=>{if(passCab(x[c])&&x[c].miles<cheapest)cheapest=x[c].miles;}));
   const dcity=(rows[0]||{}).dcity||dest,dcountry=(rows[0]||{}).dcountry||"";
   const o=(META.origins||[]).find(x=>x.iata===origin)||{};
   const monthsPresent=[...new Set(rows.map(x=>ymOf(x.date)))].sort();
@@ -521,20 +533,20 @@ function openDetail(dest,keepPos){
     const[y,mm]=ym.split('-');const mo=+mm-1;let cells="";
     rows.filter(x=>ymOf(x.date)===ym).forEach(rec=>{
       const dd=+rec.date.slice(8,10);let pips="";
-      ['Y','J','F'].forEach(c=>{if(passSeat(rec[c])){const col=c==='Y'?'var(--jade)':c==='J'?'var(--gold)':'var(--burgundy)';pips+=`<i style="background:${col}"></i>`;}});
-      if(pips)cells+=`<div class="day hit"><span class="dn">${dd}</span><span class="pips">${pips}</span></div>`;
+      ['Y','J','F'].forEach(c=>{if(passCab(rec[c])){const col=c==='Y'?'var(--jade)':c==='J'?'var(--gold)':'var(--burgundy)';pips+=`<i style="background:${col}"></i>`;}});
+      if(pips)cells+=`<div class="day hit" data-date="${rec.date}"><span class="dn">${dd}</span><span class="pips">${pips}</span></div>`;
     });
     if(cells)strip+=`<div class="month-block"><div class="mname">${(lang==='ar'?MONTHS_AR:MONTHS_EN)[mo]} ${y}</div><div class="days">${cells}</div></div>`;
   });
 
   // build flat list of (record, cabin) rows
   const flat=[];
-  rows.forEach(x=>CABS().forEach(c=>{if(passSeat(x[c]))flat.push({x,c});}));
+  rows.forEach(x=>CABS().forEach(c=>{if(passCab(x[c]))flat.push({x,c});}));
   const tableRows=flat.map(({x,c},i)=>{
     const cd=x[c],[y,mm,dd]=x.date.split('-').map(Number),dt=new Date(y,mm-1,dd);
     const dn=(lang==='ar'?DOW_AR:DOW_EN)[dt.getDay()],mn=(lang==='ar'?MONTHS_AR:MONTHS_EN)[mm-1];
     const cls=c==='Y'?'y':c==='J'?'j':'f',lab=c==='Y'?L().eco:c==='J'?L().biz:L().first;
-    return `<div class="trow" data-id="${x.id}" data-cab="${c}" data-i="${i}">
+    return `<div class="trow" data-id="${x.id}" data-cab="${c}" data-i="${i}" data-date="${x.date}">
       <div class="t-date">${dd} ${mn}<small>${dn}</small></div>
       <div class="t-cabin"><span class="pill ${cls}">${lab}</span> <span class="airl">${cd.airlines||''}</span></div>
       <div class="t-miles">${(cd.miles||0).toLocaleString('en')}</div>
@@ -565,6 +577,19 @@ function openDetail(dest,keepPos){
     row.classList.toggle('open');exp.classList.toggle('show');
     if(opening&&!exp.dataset.loaded){exp.dataset.loaded="1";loadTrips(row.dataset.id,row.dataset.cab,exp,row.querySelector('.fcount'));}
   };
+  const stripWrap=$(".strip-wrap");
+  if(stripWrap)stripWrap.onclick=e=>{
+    const cell=e.target.closest('.day.hit[data-date]');if(!cell)return;
+    const tr=$(`#tbl .trow[data-date="${cell.dataset.date}"]`);
+    if(!tr)return;
+    scrollToEl(tr);
+    tr.classList.remove('flash');void tr.offsetWidth;tr.classList.add('flash');
+    const exp=tr.nextElementSibling;
+    if(!tr.classList.contains('open')){
+      tr.classList.add('open');exp.classList.add('show');
+      if(!exp.dataset.loaded){exp.dataset.loaded="1";loadTrips(tr.dataset.id,tr.dataset.cab,exp,tr.querySelector('.fcount'));}
+    }
+  };
   if(!keepPos)scrollToEl($("#detailView"));
 }
 
@@ -591,8 +616,9 @@ function setDay(v,silent){
 }
 $("#langBtn").onclick=()=>{lang=lang==='ar'?'en':'ar';applyLang();updateStatus();renderOrigins();renderMonths();refreshView();};
 $("#refreshBtn").onclick=refreshNow;
-$("#origins").onclick=e=>{const c=e.target.closest('[data-o]');if(!c)return;origin=c.getAttribute('data-o');country="ALL";backToGrid();renderOrigins();renderGrid();};
-$("#cabins").onclick=e=>{const b=e.target.closest('button');if(!b)return;cabin=b.getAttribute('data-c');document.querySelectorAll('#cabins button').forEach(x=>x.classList.remove('on'));b.classList.add('on');refreshView();};
+$("#originSelect").onchange=e=>{origin=e.target.value;country="ALL";backToGrid();renderOrigins();renderGrid();};
+$("#cabinSelect").onchange=e=>{cabin=e.target.value;refreshView();};
+$("#directOnly").onchange=e=>{directOnly=e.target.checked;refreshView();};
 $("#countryList").onclick=e=>{const c=e.target.closest('[data-ctry]');if(!c)return;country=c.getAttribute('data-ctry');backToGrid();renderGrid();if(window.innerWidth<=820)scrollToEl($("#cards"));};
 $("#countrySelect").onchange=e=>{country=e.target.value;backToGrid();renderGrid();if(window.innerWidth<=820)scrollToEl($("#cards"));};
 $("#cards").onclick=e=>{const c=e.target.closest('[data-dest]');if(!c)return;openDetail(c.getAttribute('data-dest'));};
