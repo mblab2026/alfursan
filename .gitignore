@@ -1,0 +1,14 @@
+# secrets & runtime data — never commit these
+.env
+.env.*
+!.env.example
+data/
+cache.json
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# image bundles / archives
+*.tar

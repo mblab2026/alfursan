@@ -1,0 +1,15 @@
+# keep secrets, runtime data, and dev cruft out of the build context & image layers
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+!.env.example
+data/
+cache.json
+__pycache__/
+*.pyc
+*.pyo
+*.tar
+setup.sh
+README.md

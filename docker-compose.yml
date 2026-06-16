@@ -1,0 +1,25 @@
+services:
+  alfursan:
+    build: .
+    image: ghcr.io/mblab2026/alfursan:${TAG:-1.1.0}
+    container_name: alfursan
+    env_file: .env
+    ports:
+      - "8080:8080"            # host:container — plain HTTP; TLS is terminated upstream
+    volumes:
+      - alfursan-data:/data    # the ONLY writable mount: holds cache.json
+    tmpfs:
+      - /tmp                   # gunicorn worker heartbeat dir (rootfs is read-only)
+    read_only: true            # hardening: immutable root filesystem
+    security_opt:
+      - no-new-privileges:true # hardening: block privilege escalation
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8080')+'/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  alfursan-data:
