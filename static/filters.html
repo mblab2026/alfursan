@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alfursan seats finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body data-page="filters">
+<header>
+  <div class="bar wrap">
+    <a class="brand" href="/" style="text-decoration:none;color:inherit">
+      <div class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#C2982F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l9-3 4-9 2 1-2 8 6-2 1 2-7 3-2 5-2-1 1-4-7 2z"/></svg></div>
+      <div class="brand-text">
+        <h1 data-i18n="title">Alfursan seats finder</h1>
+        <div class="sub" data-i18n="subtitle">Seats bookable with miles — Saudia & SkyTeam partners</div>
+      </div>
+    </a>
+    <div class="bar-actions">
+      <div class="updated"><span class="dot" id="statusDot"></span><span id="updatedTxt">…</span></div>
+      <button class="refresh-btn" id="refreshBtn">
+        <svg class="ri" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+        <span data-i18n="refreshNow">Refresh now</span>
+      </button>
+      <button class="lang" id="langBtn">ع</button>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="subhead">
+    <a class="backlink" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span data-i18n="changeCity">Change city</span></a>
+    <div class="from-tag"><span data-i18n="flightsFrom">Flights from</span> <b id="fromName">…</b></div>
+  </div>
+  <div id="loading" class="loading" data-i18n="loading">Loading data…</div>
+  <div class="panel" id="filterPanel" style="display:none">
+    <div class="controls" style="margin-top:0;padding-top:0;border-top:0">
+      <div class="ctrl">
+        <div class="flabel" data-i18n="cabin">Cabin</div>
+        <select class="sel" id="fCabin">
+          <option value="ALL" data-i18n="allCab">All</option>
+          <option value="Y" data-i18n="eco">Economy</option>
+          <option value="J" data-i18n="biz">Business</option>
+          <option value="F" data-i18n="first">First</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <div class="flabel" data-i18n="directLabel">Flight type</div>
+        <label class="chk"><input type="checkbox" id="fDirect"><span data-i18n="directOnly">Direct only</span></label>
+      </div>
+      <div class="ctrl" style="flex:1 1 100%">
+        <div class="flabel" data-i18n="dateLabel">Date</div>
+        <div class="seg" id="dateModeSeg" style="margin-bottom:10px">
+          <button type="button" data-mode="range" data-i18n="monthsRange">Months range</button>
+          <button type="button" data-mode="day" data-i18n="specificDay">Specific day</button>
+        </div>
+        <div class="daterow" id="rangeRow"><select class="sel month" id="fM1"></select><span class="arrow" data-i18n="rangeArrow">→</span><select class="sel month" id="fM2"></select></div>
+        <div class="dayrow" id="dayRow" style="margin-top:8px"><input type="date" class="sel" id="fDay"></div>
+      </div>
+      <div class="ctrl">
+        <div class="flabel" data-i18n="seatsLabel">Seats together</div>
+        <select class="sel" id="fSeats">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <div class="flabel" data-i18n="destination">Destination</div>
+        <select class="sel" id="fDest"></select>
+      </div>
+    </div>
+  </div>
+  <button class="btn-apply" id="showBtn" style="display:none;width:100%;margin-top:4px;align-items:center;justify-content:center;gap:8px">
+    <span data-i18n="showFlights">Show flights</span> <span id="showCount" class="mono"></span>
+  </button>
+</main>
+<footer class="wrap" style="padding-bottom:40px;color:var(--muted-2);font-size:12px;text-align:center">
+  <span data-i18n="foot">Cached data, refreshed periodically · always confirm on Saudia before booking</span>
+</footer>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -93,8 +93,7 @@ def fetch_all():
     pages = 0
     while True:
         params = {"source": SOURCE, "take": 1000}
-        if ORIGIN_REGION:
-            params["origin_region"] = ORIGIN_REGION
+        # full program pull — no region filter, so every origin & destination is captured
         if cursor is not None:
             params["cursor"] = cursor
             params["skip"] = skip
@@ -121,11 +120,6 @@ def transform(raw):
         origin = route.get("OriginAirport")
         dest = route.get("DestinationAirport")
         if not origin or not dest:
-            continue
-        if ORIGINS:
-            if origin not in ORIGINS:
-                continue
-        elif country_of(origin) != ORIGIN_COUNTRY:
             continue
         rec = {
             "id": obj.get("ID"),
@@ -206,22 +200,45 @@ def index():
     return send_from_directory("static", "index.html")
 
 
+@app.route("/flights/<frm>")
+def filters_page(frm):
+    return send_from_directory("static", "filters.html")
+
+
+@app.route("/flights/<frm>/results")
+def results_page(frm):
+    return send_from_directory("static", "results.html")
+
+
+@app.route("/flights/<frm>/<to>")
+def detail_page(frm, to):
+    return send_from_directory("static", "detail.html")
+
+
 @app.route("/api/data")
 def api_data():
+    frm = (request.args.get("from") or "").strip().upper()
     with lock:
         recs = state["records"]
         meta = {"updated": state["updated"], "status": state["status"], "error": state["error"], "refreshProtected": bool(REFRESH_PASSWORD)}
-    # distinct departure cities present in the data, busiest first
+    # distinct departure cities present in the data: Saudi cities first, then busiest
     counts, cities = {}, {}
     for r in recs:
         counts[r["o"]] = counts.get(r["o"], 0) + 1
         cities[r["o"]] = r.get("ocity", r["o"])
     origins = sorted(
-        ({"iata": o, "city": cities[o], "n": counts[o]} for o in counts),
-        key=lambda x: -x["n"],
+        (
+            {"iata": o, "city": cities[o], "country": country_of(o),
+             "saudi": country_of(o) == "Saudi Arabia", "n": counts[o]}
+            for o in counts
+        ),
+        key=lambda x: (not x["saudi"], -x["n"]),
     )
     meta["origins"] = origins
-    meta["records"] = recs
+    # records are returned only for a specific departure city, to keep each payload small
+    meta["records"] = [r for r in recs if r["o"] == frm] if frm else []
+    if frm:
+        meta["from"] = {"iata": frm, "city": city_of(frm), "country": country_of(frm)}
     return jsonify(meta)
 
 

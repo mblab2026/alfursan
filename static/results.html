@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body data-page="picker">
+<body data-page="results">
 <header>
   <div class="bar wrap">
     <a class="brand" href="/" style="text-decoration:none;color:inherit">
@@ -30,16 +30,14 @@
   </div>
 </header>
 <main class="wrap">
-  <div class="pick-hero">
-    <div class="pick-title" data-i18n="pickTitle">Where are you flying from?</div>
-    <div class="pick-sub" data-i18n="pickSub">Pick your departure city to see every destination you can reach with AlFursan miles.</div>
-    <div class="search">
-      <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="pickSearch" type="text" autocomplete="off" data-i18n-ph="searchPh" placeholder="Search city or airport code…">
-    </div>
+  <div class="subhead">
+    <a class="backlink" id="editFilters" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span data-i18n="editFilters">Edit filters</span></a>
+    <div class="from-tag"><span data-i18n="flightsFrom">Flights from</span> <b id="fromName">…</b></div>
   </div>
-  <div id="pickLoading" class="loading" data-i18n="loading">Loading data…</div>
-  <div id="pickList"></div>
+  <div id="loading" class="loading" data-i18n="loading">Loading data…</div>
+  <div class="meta" id="filterSummary" style="margin-bottom:4px"></div>
+  <div class="meta" id="resultMeta"></div>
+  <div class="grid" id="cards"></div>
 </main>
 <footer class="wrap" style="padding-bottom:40px;color:var(--muted-2);font-size:12px;text-align:center">
   <span data-i18n="foot">Cached data, refreshed periodically · always confirm on Saudia before booking</span>
