@@ -31,7 +31,6 @@
 </header>
 <main class="wrap">
   <div class="subhead">
-    <a class="backlink" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span data-i18n="changeCity">Change city</span></a>
     <div class="from-tag"><span data-i18n="flightsFrom">Flights from</span> <b id="fromName">…</b></div>
   </div>
   <div id="loading" class="loading" data-i18n="loading">Loading data…</div>
@@ -57,7 +56,10 @@
           <button type="button" data-mode="day" data-i18n="specificDay">Specific day</button>
         </div>
         <div class="daterow" id="rangeRow"><select class="sel month" id="fM1"></select><span class="arrow" data-i18n="rangeArrow">→</span><select class="sel month" id="fM2"></select></div>
-        <div class="dayrow" id="dayRow" style="margin-top:8px"><input type="date" class="sel" id="fDay"></div>
+        <div id="dayRow" style="margin-top:8px">
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px" data-i18n="pickDay">Pick a date</div>
+          <input type="date" class="sel" id="fDay" style="width:100%">
+        </div>
       </div>
       <div class="ctrl">
         <div class="flabel" data-i18n="seatsLabel">Seats together</div>

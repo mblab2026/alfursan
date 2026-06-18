@@ -25,7 +25,7 @@ const I18N = {
     pickTitle: "من وين مسافر؟", pickSub: "اختر مدينة المغادرة لتشوف كل وجهة توصلها بأميال الفرسان.",
     searchPh: "ابحث بالمدينة أو رمز المطار…", saudiCities: "داخل السعودية", otherCities: "مدن أخرى",
     filters: "الفلاتر", apply: "تطبيق", reset: "مسح الكل", destination: "الوجهة", allDest: "كل الوجهات",
-    noMatch: "ما فيه مدن مطابقة", changeCity: "غيّر المدينة", flightsFrom: "الرحلات من", noFlightsFrom: (n) => `لا توجد رحلات فرسان من ${n}`, showFlights: "اعرض الرحلات", editFilters: "تعديل الفلتر", dateLabel: "التاريخ", monthsRange: "نطاق الأشهر"
+    noMatch: "ما فيه مدن مطابقة", changeCity: "غيّر المدينة", flightsFrom: "الرحلات من", noFlightsFrom: (n) => `لا توجد رحلات فرسان من ${n}`, showFlights: "اعرض الرحلات", editFilters: "تعديل الفلتر", dateLabel: "التاريخ", monthsRange: "نطاق الأشهر", pickDay: "اختر يوماً"
   },
   en: {
     title: "Alfursan seats finder", subtitle: "Seats bookable with miles — Saudia & SkyTeam partners",
@@ -45,7 +45,7 @@ const I18N = {
     pickTitle: "Where are you flying from?", pickSub: "Pick your departure city to see every destination you can reach with AlFursan miles.",
     searchPh: "Search city or airport code…", saudiCities: "In Saudi Arabia", otherCities: "Other cities",
     filters: "Filters", apply: "Apply", reset: "Reset all", destination: "Destination", allDest: "All destinations",
-    noMatch: "No matching cities", changeCity: "Change city", flightsFrom: "Flights from", noFlightsFrom: (n) => `No AlFursan flights from ${n}`, showFlights: "Show flights", editFilters: "Edit filters", dateLabel: "Date", monthsRange: "Months range"
+    noMatch: "No matching cities", changeCity: "Change city", flightsFrom: "Flights from", noFlightsFrom: (n) => `No AlFursan flights from ${n}`, showFlights: "Show flights", editFilters: "Edit filters", dateLabel: "Date", monthsRange: "Months range", pickDay: "Pick a date"
   }
 };
 
@@ -128,7 +128,7 @@ function resolveMonths() {
   m1 = i1; m2 = i2; mFrom = MONTHS[m1]; mTo = MONTHS[m2];
 }
 function inRange(d) {
-  if (day) return d === day;
+  if (dateMode === "day") return day ? d === day : false;
   if (!MONTHS.length) return true;
   const ym = ymOf(d);
   return ym >= MONTHS[m1] && ym <= MONTHS[m2];
@@ -242,12 +242,9 @@ function filterSummary() {
 function applyDateMode() {
   const seg = $("#dateModeSeg");
   if (seg) seg.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.mode === dateMode));
-  const dim = (el, off) => { if (el) { el.style.opacity = off ? ".4" : ""; el.style.pointerEvents = off ? "none" : ""; } };
-  dim($("#rangeRow"), dateMode !== "range");
-  dim($("#dayRow"), dateMode !== "day");
-  if ($("#fM1")) $("#fM1").disabled = dateMode !== "range";
-  if ($("#fM2")) $("#fM2").disabled = dateMode !== "range";
-  if ($("#fDay")) $("#fDay").disabled = dateMode !== "day";
+  const rangeRow = $("#rangeRow"), dayRow = $("#dayRow");
+  if (rangeRow) rangeRow.style.display = dateMode === "range" ? "" : "none";
+  if (dayRow) dayRow.style.display = dateMode === "day" ? "" : "none";
 }
 function setDateMode(mode) {
   dateMode = mode;
@@ -260,15 +257,29 @@ function setDateMode(mode) {
 function refreshFilterDest(preferred) {
   const sel = $("#fDest"); if (!sel) return;
   const want = preferred !== undefined ? preferred : sel.value;
-  const a = +$("#fM1").value || 0, b = +$("#fM2").value || 0;
-  const dests = destCountriesFor($("#fCabin").value, +$("#fSeats").value, $("#fDirect").checked, Math.min(a, b), Math.max(a, b), $("#fDay").value || null);
+  const dv = $("#fDay").value || null;
+  let dests;
+  if (dateMode === "day" && !dv) {
+    dests = [];
+  } else {
+    const a = +$("#fM1").value || 0, b = +$("#fM2").value || 0;
+    dests = destCountriesFor($("#fCabin").value, +$("#fSeats").value, $("#fDirect").checked, Math.min(a, b), Math.max(a, b), dv);
+  }
   const has = dests.some((d) => d.c === want);
   sel.innerHTML = `<option value="ALL">${L().allDest}</option>` +
     dests.map((d) => `<option value="${d.c}">${ctryName(d.c)} (${d.n})</option>`).join("");
   sel.value = has ? want : "ALL";
 }
 function updateShowCount() {
-  const cs = $("#showCount"); if (cs) cs.textContent = "(" + destAgg().length + ")";
+  const n = destAgg().length;
+  const cs = $("#showCount"); if (cs) cs.textContent = "(" + n + ")";
+  const btn = $("#showBtn");
+  if (btn) {
+    const blocked = dateMode === "day" && !day;   // day mode chosen but no date picked
+    btn.disabled = blocked;
+    btn.style.opacity = blocked ? ".5" : "";
+    btn.style.pointerEvents = blocked ? "none" : "";
+  }
 }
 // read every control into global state, persist
 function syncFromForm() {
