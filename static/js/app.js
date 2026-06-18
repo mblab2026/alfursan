@@ -216,7 +216,7 @@ function destCountriesFor(cab, sts, dir, i1, i2, dayv) {
   const counts = {};
   RECORDS.filter((x) => inR(x.date) && cabs.some((c) => passC(x[c]))).forEach((x) => {
     counts[x.dcountry] = counts[x.dcountry] || new Set();
-    counts[x.dcountry].add(x.date + "|" + x.d);
+    counts[x.dcountry].add(x.d); // distinct destination cities in this country
   });
   return Object.keys(counts).map((c) => ({ c, n: counts[c].size })).sort((a, b) => b.n - a.n);
 }
@@ -378,7 +378,7 @@ function destAgg() {
   return list.sort((a, b) => a.cheapest - b.cheapest);
 }
 function cabChip(label, cls, val) {
-  if (val === Infinity || val == null) return `<div class="cab">${label}<small>&nbsp;</small></div>`;
+  if (val === Infinity || val == null) return `<div class="cab">${label}</div>`;
   return `<div class="cab has ${cls}">${label}<span class="v">${kk(val)}</span></div>`;
 }
 async function initFilters() {
