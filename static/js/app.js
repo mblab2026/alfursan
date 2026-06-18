@@ -25,7 +25,7 @@ const I18N = {
     pickTitle: "من وين مسافر؟", pickSub: "اختر مدينة المغادرة لتشوف كل وجهة توصلها بأميال الفرسان.",
     searchPh: "ابحث بالمدينة أو رمز المطار…", saudiCities: "داخل السعودية", otherCities: "مدن أخرى",
     filters: "الفلاتر", apply: "تطبيق", reset: "مسح الكل", destination: "الوجهة", allDest: "كل الوجهات",
-    noMatch: "ما فيه مدن مطابقة", changeCity: "غيّر المدينة", flightsFrom: "الرحلات من", noFlightsFrom: (n) => `لا توجد رحلات فرسان من ${n}`, showFlights: "اعرض الرحلات", editFilters: "تعديل الفلتر", dateLabel: "التاريخ", monthsRange: "نطاق الأشهر", pickDay: "اختر يوماً"
+    noMatch: "ما فيه مدن مطابقة", changeCity: "غيّر المدينة", flightsFrom: "الرحلات من", noFlightsFrom: (n) => `لا توجد رحلات فرسان من ${n}`, showFlights: "اعرض النتائج", editFilters: "تعديل الفلتر", dateLabel: "التاريخ", monthsRange: "نطاق الأشهر", pickDay: "اختر يوماً"
   },
   en: {
     title: "Alfursan seats finder", subtitle: "Seats bookable with miles — Saudia & SkyTeam partners",
@@ -45,7 +45,7 @@ const I18N = {
     pickTitle: "Where are you flying from?", pickSub: "Pick your departure city to see every destination you can reach with AlFursan miles.",
     searchPh: "Search city or airport code…", saudiCities: "In Saudi Arabia", otherCities: "Other cities",
     filters: "Filters", apply: "Apply", reset: "Reset all", destination: "Destination", allDest: "All destinations",
-    noMatch: "No matching cities", changeCity: "Change city", flightsFrom: "Flights from", noFlightsFrom: (n) => `No AlFursan flights from ${n}`, showFlights: "Show flights", editFilters: "Edit filters", dateLabel: "Date", monthsRange: "Months range", pickDay: "Pick a date"
+    noMatch: "No matching cities", changeCity: "Change city", flightsFrom: "Flights from", noFlightsFrom: (n) => `No AlFursan flights from ${n}`, showFlights: "View results", editFilters: "Edit filters", dateLabel: "Date", monthsRange: "Months range", pickDay: "Pick a date"
   }
 };
 
@@ -225,18 +225,6 @@ function setFromName() {
   const o = (META.from || {});
   head.textContent = origName(FROM, o.city) + " (" + FROM + ")";
 }
-// human-readable summary of the active filters (shown on the results page)
-function filterSummary() {
-  const parts = [];
-  parts.push(cabin === "ALL" ? L().allCab : cabin === "Y" ? L().eco : cabin === "J" ? L().biz : L().first);
-  const mn = (ym) => { const q = ym.split("-"); return (lang === "ar" ? MONTHS_AR : MONTHS_EN)[+q[1] - 1] + " " + q[0]; };
-  if (day) parts.push(day);
-  else if (MONTHS.length) parts.push(m1 === m2 ? mn(MONTHS[m1]) : mn(MONTHS[m1]) + " " + L().rangeArrow + " " + mn(MONTHS[m2]));
-  if (seats > 1) parts.push(seats + " " + seatLabel(seats));
-  if (directOnly) parts.push(L().direct);
-  if (country !== "ALL") parts.push(ctryName(country));
-  return parts.join("  \u00b7  ");
-}
 
 /* ---------------- filter page form ---------------- */
 function applyDateMode() {
@@ -390,7 +378,7 @@ function destAgg() {
   return list.sort((a, b) => a.cheapest - b.cheapest);
 }
 function cabChip(label, cls, val) {
-  if (val === Infinity || val == null) return `<div class="cab">${label}<small>\u2014</small></div>`;
+  if (val === Infinity || val == null) return `<div class="cab">${label}<small>&nbsp;</small></div>`;
   return `<div class="cab has ${cls}">${label}<span class="v">${kk(val)}</span></div>`;
 }
 async function initFilters() {
@@ -419,8 +407,6 @@ async function initFilters() {
 function renderResults() {
   setFromName();
   const list = destAgg();
-  const meta = $("#resultMeta"); if (meta) meta.textContent = L().resultMeta(list.length);
-  const sum = $("#filterSummary"); if (sum) sum.textContent = filterSummary();
   const cards = $("#cards"); if (!cards) return;
   if (!list.length) {
     cards.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">${L().emptyTitle}</div><div>${L().emptyBody}</div></div>`;
@@ -448,12 +434,12 @@ async function initResults() {
   try {
     await fetchData(FROM);
     $("#loading") && ($("#loading").style.display = "none");
-    if (META.status === "error" && !RECORDS.length) { if ($("#resultMeta")) $("#resultMeta").textContent = L().errTitle + (META.error ? " \u2014 " + META.error : ""); return; }
+    if (META.status === "error" && !RECORDS.length) { const cd = $("#cards"); if (cd) cd.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">${L().errTitle}</div>${META.error ? `<div>${META.error}</div>` : ""}</div>`; return; }
     renderResults();
     if (META.status === "refreshing") watchRefresh();
   } catch (e) {
     $("#loading") && ($("#loading").style.display = "none");
-    if ($("#resultMeta")) $("#resultMeta").textContent = L().errTitle;
+    const cd = $("#cards"); if (cd) cd.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">${L().errTitle}</div></div>`;
   }
 }
 
