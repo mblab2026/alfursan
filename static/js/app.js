@@ -197,9 +197,9 @@ function bindHeader() {
 }
 
 /* ---------------- data fetch ---------------- */
-async function fetchData(frm) {
+async function fetchData(frm, fresh = false) {
   const url = "/api/data" + (frm ? ("?from=" + encodeURIComponent(frm)) : "");
-  const j = await (await fetch(url, { cache: "no-store" })).json();
+  const j = await (await fetch(url, fresh ? { cache: "reload" } : { cache: "default" })).json();
   RECORDS = j.records || [];
   META = j;
   updateStatus();
@@ -311,7 +311,7 @@ function wireFilterForm() {
 /* ============================ PAGE 1: picker ============================ */
 async function initPicker() {
   RERENDER = renderPicker;
-  RELOAD = async () => { await fetchData(null); renderPicker(); };
+  RELOAD = async () => { await fetchData(null, true); renderPicker(); };
   if (!AIRPORTS_DB) fetch("/static/airports.json", { cache: "force-cache" }).then((r) => r.json()).then((d) => { AIRPORTS_DB = d; }).catch(() => {});
   try {
     await fetchData(null);
@@ -385,7 +385,7 @@ function cabChip(label, cls, val) {
 async function initFilters() {
   FROM = decodeURIComponent((location.pathname.split("/")[2] || "")).toUpperCase();
   RERENDER = () => { setFromName(); fillFilterForm(); updateShowCount(); };
-  RELOAD = async () => { await fetchData(FROM); RERENDER(); };
+  RELOAD = async () => { await fetchData(FROM, true); RERENDER(); };
   const sb = $("#showBtn"); if (sb) sb.onclick = () => { location.href = "/flights/" + encodeURIComponent(FROM) + "/results"; };
   try {
     await fetchData(FROM);
@@ -425,7 +425,7 @@ function renderResults() {
 async function initResults() {
   FROM = decodeURIComponent((location.pathname.split("/")[2] || "")).toUpperCase();
   RERENDER = () => { renderResults(); };
-  RELOAD = async () => { await fetchData(FROM); renderResults(); };
+  RELOAD = async () => { await fetchData(FROM, true); renderResults(); };
   const ed = $("#editFilters"); if (ed) ed.href = "/flights/" + encodeURIComponent(FROM);
   const cards = $("#cards");
   if (cards) cards.onclick = (e) => {
@@ -542,7 +542,7 @@ async function initDetail() {
   DEST = decodeURIComponent(parts[3] || "").toUpperCase();
   const back = $("#backFlights"); if (back) back.href = "/flights/" + encodeURIComponent(FROM) + "/results";
   RERENDER = () => { renderDetail(); };
-  RELOAD = async () => { await fetchData(FROM); RERENDER(); };
+  RELOAD = async () => { await fetchData(FROM, true); RERENDER(); };
   try {
     await fetchData(FROM);
     $("#loading") && ($("#loading").style.display = "none");

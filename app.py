@@ -239,7 +239,12 @@ def api_data():
     meta["records"] = [r for r in recs if r["o"] == frm] if frm else []
     if frm:
         meta["from"] = {"iata": frm, "city": city_of(frm), "country": country_of(frm)}
-    return jsonify(meta)
+    resp = jsonify(meta)
+    # The big per-city payload (~3MB) changes only every refresh cycle, so let the
+    # browser cache it briefly: navigating filter -> results -> detail reuses one download.
+    # The status/origins response (no ?from=) must stay fresh.
+    resp.headers["Cache-Control"] = "private, max-age=300" if frm else "no-store"
+    return resp
 
 
 @app.route("/api/trips/<aid>")

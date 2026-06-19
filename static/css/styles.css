@@ -31,7 +31,7 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .notice{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:center;gap:9px}
   .notice.err{background:#FBEAE8;border:1px solid #E8B6B0;color:#8a342c;display:flex}
-  main{padding:20px 0 70px}
+  main{padding:20px 0 70px;min-height:calc(100vh - 220px)}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:22px}
   .flabel{font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:9px;letter-spacing:.3px;text-transform:uppercase}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
