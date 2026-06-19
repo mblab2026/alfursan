@@ -1,5 +1,4 @@
-/* Optional: drop the official "Saudi Font" file into static/fonts/ to use it automatically */
-  @font-face{font-family:"SaudiOfficial";src:url("/static/fonts/saudi.woff2") format("woff2"),url("/static/fonts/saudi.ttf") format("truetype");font-weight:100 900;font-display:swap;}
+/* Body font: Tajawal (loaded via Google Fonts <link> in each page head) */
   :root{
     --ink:#13211F;--teal:#0C4A42;--teal-deep:#093A33;--jade:#2A8B7C;--gold:#C2982F;--burgundy:#8A3344;
     --bg:#EEF1F0;--card:#FFFFFF;--line:#DBE2E0;--muted:#69736F;--muted-2:#9AA39F;
@@ -8,7 +7,7 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:"SaudiOfficial","Tajawal",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  body{font-family:"Tajawal",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-feature-settings:"tnum"}
   .wrap{width:min(var(--maxw),94vw);margin:0 auto}
   header{background:linear-gradient(165deg,var(--teal) 0%,var(--teal-deep) 100%);color:#EAF2F0;padding:14px 0;position:sticky;top:0;z-index:30}

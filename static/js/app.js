@@ -20,10 +20,10 @@ const I18N = {
     emptyBody: "جرّب درجة مختلفة، قلّل عدد المقاعد، أو وسّع نطاق الأشهر.",
     errTitle: "تعذّر جلب البيانات", updNow: "محدّث الآن", updMin: (n) => `آخر تحديث: قبل ${n} دقيقة`, updHr: (n) => `آخر تحديث: قبل ${n} ساعة`, updDay: (n) => `آخر تحديث: قبل ${n} يوم`,
     refreshing: "جارٍ التحديث…", noData: "لا توجد بيانات بعد", refreshNow: "تحديث الآن",
-    loadingFlights: "…جارٍ جلب الرحلات", flightsErr: "تعذّر جلب تفاصيل الرحلة", book: "احجز",
+    loadingFlights: "…جارٍ جلب الرحلات", flightsErr: "تعذّر جلب تفاصيل الرحلة", flightsGone: "ما عادت متاحة — تغيّر التوفّر، حدّث الصفحة", book: "احجز",
     refreshPrompt: "اكتب كلمة مرور التحديث", refreshWrong: "كلمة المرور غير صحيحة",
     pickTitle: "من وين مسافر؟", pickSub: "اختر مدينة المغادرة لتشوف كل وجهة توصلها بأميال الفرسان.",
-    searchPh: "ابحث بالمدينة أو رمز المطار…", saudiCities: "داخل السعودية", otherCities: "مدن أخرى",
+    searchPh: "ابحث بالمدينة أو الدولة أو رمز المطار…", saudiCities: "داخل السعودية", otherCities: "مدن أخرى",
     filters: "الفلاتر", apply: "تطبيق", reset: "مسح الكل", destination: "الوجهة", allDest: "كل الوجهات",
     noMatch: "ما فيه مدن مطابقة", changeCity: "غيّر المدينة", flightsFrom: "الرحلات من", noFlightsFrom: (n) => `لا توجد رحلات فرسان من ${n}`, showFlights: "اعرض النتائج", editFilters: "تعديل الفلتر", dateLabel: "التاريخ", monthsRange: "نطاق الأشهر", pickDay: "اختر يوماً"
   },
@@ -40,10 +40,10 @@ const I18N = {
     emptyBody: "Try a different cabin, fewer seats, or widen the month range.",
     errTitle: "Couldn't load data", updNow: "updated just now", updMin: (n) => `updated ${n} min ago`, updHr: (n) => `updated ${n}h ago`, updDay: (n) => `updated ${n}d ago`,
     refreshing: "refreshing…", noData: "no data yet", refreshNow: "Refresh now",
-    loadingFlights: "loading flights…", flightsErr: "couldn't load flight details", book: "Book",
+    loadingFlights: "loading flights…", flightsErr: "couldn't load flight details", flightsGone: "No longer available — availability changed, refresh the page", book: "Book",
     refreshPrompt: "Enter refresh password", refreshWrong: "Wrong password",
     pickTitle: "Where are you flying from?", pickSub: "Pick your departure city to see every destination you can reach with AlFursan miles.",
-    searchPh: "Search city or airport code…", saudiCities: "In Saudi Arabia", otherCities: "Other cities",
+    searchPh: "Search city, country, or airport code…", saudiCities: "In Saudi Arabia", otherCities: "Other cities",
     filters: "Filters", apply: "Apply", reset: "Reset all", destination: "Destination", allDest: "All destinations",
     noMatch: "No matching cities", changeCity: "Change city", flightsFrom: "Flights from", noFlightsFrom: (n) => `No AlFursan flights from ${n}`, showFlights: "View results", editFilters: "Edit filters", dateLabel: "Date", monthsRange: "Months range", pickDay: "Pick a date"
   }
@@ -202,6 +202,7 @@ async function fetchData(frm) {
   const j = await (await fetch(url, { cache: "no-store" })).json();
   RECORDS = j.records || [];
   META = j;
+  updateStatus();
   MONTHS = [...new Set(RECORDS.map((x) => ymOf(x.date)).filter(Boolean))].sort();
   resolveMonths();
   return j;
@@ -333,7 +334,7 @@ function renderPicker() {
   const q = _pickQuery.trim().toLowerCase();
   const match = (o) => {
     if (!q) return true;
-    const names = [o.iata, o.city || "", origName(o.iata, o.city), (ORIGIN_NAMES[o.iata] ? ORIGIN_NAMES[o.iata].en + " " + ORIGIN_NAMES[o.iata].ar : "")].join(" ").toLowerCase();
+    const names = [o.iata, o.city || "", origName(o.iata, o.city), (ORIGIN_NAMES[o.iata] ? ORIGIN_NAMES[o.iata].en + " " + ORIGIN_NAMES[o.iata].ar : ""), o.country || "", (COUNTRIES_AR[o.country] || "")].join(" ").toLowerCase();
     return names.includes(q);
   };
   const sa = origins.filter((o) => o.saudi && match(o));
@@ -463,7 +464,7 @@ async function loadTrips(id, cab, exp, countEl) {
       const segs = (t.segments || []).map((s) => `<div class="seg2"><b>${s.fn || ""}</b> ${s.o}→${s.d} · ${fmtT(s.dep)}–${fmtT(s.arr)}${s.aircraft ? ` · ${s.aircraft}` : ""}</div>`).join("");
       return `<div class="trip"><div class="trip-h"><span class="fn">${t.flightNumbers || t.carriers || ""}</span><span class="trip-meta">${stops}${dur}${seatsTxt}</span></div><div class="segs">${segs}</div></div>`;
     }).join("");
-    exp.innerHTML = body || `<div class="exp-load">—</div>`;
+    exp.innerHTML = body || `<div class="exp-err">${L().flightsGone}</div>`;
   } catch (e) { exp.innerHTML = `<div class="exp-err">${L().flightsErr}</div>`; }
 }
 
