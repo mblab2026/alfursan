@@ -255,7 +255,7 @@ def api_trips(aid):
     except Exception as exc:  # noqa: BLE001
         return jsonify({"ok": False, "error": str(exc)}), 502
     trips = []
-    for t in body.get("data", []):
+    for t in (body.get("data") or []):
         trips.append({
             "cabin": t.get("Cabin"),
             "flightNumbers": t.get("FlightNumbers"),
